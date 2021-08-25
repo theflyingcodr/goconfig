@@ -99,6 +99,11 @@ type Db struct {
 	Migrate    bool
 }
 
+// Validate will ensure the HeaderClient config is valid.
+func (d *Db) Validate(v validator.ErrValidation) {
+	v = v.Validate("db.type", validator.MatchString(string(d.Type), reDbType))
+}
+
 var reDbType = regexp.MustCompile(`sqlite|mysql|postgres`)
 
 // DbType is used to restrict the dbs we can support.
@@ -115,6 +120,9 @@ const (
 // into a struct that contains a configuration.
 type ConfigurationLoader interface {
 	WithServer() *Config
+	WithEnvironment() *Config
+	WithLog() *Config
+	WithHttpClient(name string) *Config
 	WithDb() *Config
 	WithDeployment(app string) *Config
 }
