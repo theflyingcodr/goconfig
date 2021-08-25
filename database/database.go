@@ -5,7 +5,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/libsv/bitcoin-hc/config"
+	"github.com/theflyingcodr/config"
 )
 
 type dbSetupFunc func(c *config.Db) (*sqlx.DB, error)
@@ -21,6 +21,7 @@ func NewDbSetup() dbSetups {
 	return s
 }
 
+// SetupDb can be used to setup a new database.
 func (d dbSetups) SetupDb(cfg *config.Db) (*sqlx.DB, error) {
 	fn, ok := d[cfg.Type]
 	if !ok {

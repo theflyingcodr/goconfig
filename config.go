@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	EnvServerPort = "server.port"
-	EnvServerHost = "server.host"
+	EnvServerPort       = "server.port"
+	EnvServerHost       = "server.host"
+	EnvServerTLSEnabled = "server.tls.enabled"
+	EnvServerTLSCert    = "server.tls.cert"
 
 	EnvEnvironment = "env.environment"
 	EnvMainNet     = "env.mainnet"
@@ -18,12 +20,19 @@ const (
 	EnvVersion     = "env.version"
 	EnvCommit      = "env.commit"
 	EnvBuildDate   = "env.builddate"
-	EnvLogLevel    = "log.level"
+
+	EnvLogLevel = "log.level"
 
 	EnvDb        = "db.type"
 	EnvDbSchema  = "db.schema.path"
 	EnvDbDsn     = "db.dsn"
 	EnvDbMigrate = "db.migrate"
+
+	EnvHttpClientHost       = "%s.client.host"
+	EnvHttpClientPort       = "%s.client.port"
+	EnvHttpClientTimeout    = "%s.client.timeout"
+	EnvHttpClientTLSEnabled = "%s.client.tls.enabled"
+	EnvHttpClientTLSCert    = "%s.client.tls.cert"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -84,7 +93,7 @@ type Server struct {
 
 // Db contains database information.
 type Db struct {
-	Type       string
+	Type       DbType
 	SchemaPath string
 	Dsn        string
 	Migrate    bool
