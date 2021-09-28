@@ -9,20 +9,29 @@ import (
 )
 
 const (
-	EnvServerPort = "server.port"
-	EnvServerHost = "server.host"
+	EnvServerPort       = "server.port"
+	EnvServerHost       = "server.host"
+	EnvServerTLSEnabled = "server.tls.enabled"
+	EnvServerTLSCert    = "server.tls.cert"
 
 	EnvEnvironment = "env.environment"
 	EnvRegion      = "env.region"
 	EnvVersion     = "env.version"
 	EnvCommit      = "env.commit"
 	EnvBuildDate   = "env.builddate"
-	EnvLogLevel    = "log.level"
+
+	EnvLogLevel = "log.level"
 
 	EnvDb        = "db.type"
 	EnvDbSchema  = "db.schema.path"
 	EnvDbDsn     = "db.dsn"
 	EnvDbMigrate = "db.migrate"
+
+	EnvHttpClientHost       = "%s.client.host"
+	EnvHttpClientPort       = "%s.client.port"
+	EnvHttpClientTimeout    = "%s.client.timeout"
+	EnvHttpClientTLSEnabled = "%s.client.tls.enabled"
+	EnvHttpClientTLSCert    = "%s.client.tls.cert"
 
 	EnvRedisAddress  = "redis.address"
 	EnvRedisPassword = "redis.password"
@@ -88,10 +97,15 @@ type Server struct {
 
 // Db contains database information.
 type Db struct {
-	Type       string
+	Type       DbType
 	SchemaPath string
 	Dsn        string
 	Migrate    bool
+}
+
+// Validate will ensure the HeaderClient config is valid.
+func (d *Db) Validate(v validator.ErrValidation) {
+	v = v.Validate("db.type", validator.MatchString(string(d.Type), reDbType))
 }
 
 var reDbType = regexp.MustCompile(`sqlite|mysql|postgres`)
@@ -123,12 +137,14 @@ func (c *Config) CustomConfig(name string, out interface{}) {
 // ConfigurationLoader will load configuration items
 // into a struct that contains a configuration.
 type ConfigurationLoader interface {
-	WithDefaults(func() error) *Config
-	WithCustomConfig(func(c *Config) error) *Config
-	WithServer() *Config
-	WithDb() *Config
-	WithDeployment(app string) *Config
-	WithRedis() *Config
+	WithServer() ConfigurationLoader
+	WithEnvironment() ConfigurationLoader
+	WithLog() ConfigurationLoader
+	WithHttpClient(name string) ConfigurationLoader
+	WithDb() ConfigurationLoader
+	WithDeployment(app string) ConfigurationLoader
+	WithRedis() ConfigurationLoader
+	Load() *Config
 }
 
 func LetsSee() {

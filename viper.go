@@ -9,7 +9,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewViperConfig(appname string) *Config {
+type ViperConfig struct {
+	*Config
+}
+
+func NewViperConfig(appname string) *ViperConfig {
 	viper.SetConfigName("config")
 	viper.SetConfigType("ini")
 	viper.AddConfigPath(fmt.Sprintf("/etc/%s/", appname))
@@ -27,11 +31,13 @@ func NewViperConfig(appname string) *Config {
 	}
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	return &Config{}
+	return &ViperConfig{
+		Config: &Config{},
+	}
 }
 
 // WithServer will setup the web server configuration if required.
-func (c *Config) WithServer() *Config {
+func (c *ViperConfig) WithServer() ConfigurationLoader {
 	c.Server = &Server{
 		Port:     viper.GetString(EnvServerPort),
 		Hostname: viper.GetString(EnvServerHost),
@@ -40,7 +46,7 @@ func (c *Config) WithServer() *Config {
 }
 
 // WithDeployment sets up the deployment configuration if required.
-func (c *Config) WithDeployment(appName string) *Config {
+func (c *ViperConfig) WithDeployment(appName string) ConfigurationLoader {
 	viper.SetDefault(EnvEnvironment, "dev")
 	viper.SetDefault(EnvRegion, "test")
 	viper.SetDefault(EnvCommit, "test")
@@ -58,15 +64,15 @@ func (c *Config) WithDeployment(appName string) *Config {
 	return c
 }
 
-func (c *Config) WithLog() *Config {
+func (c *ViperConfig) WithLog() ConfigurationLoader {
 	c.Logging = &Logging{Level: viper.GetString(EnvLogLevel)}
 	return c
 }
 
 // WithDb sets up and returns database configuration.
-func (c *Config) WithDb() *Config {
+func (c *ViperConfig) WithDb() ConfigurationLoader {
 	c.Db = &Db{
-		Type:       viper.GetString(EnvDb),
+		Type:       DbType(viper.GetString(EnvDb)),
 		Dsn:        viper.GetString(EnvDbDsn),
 		SchemaPath: viper.GetString(EnvDbSchema),
 	}
@@ -74,7 +80,7 @@ func (c *Config) WithDb() *Config {
 }
 
 // WithRedis will include redis config.
-func (c *Config) WithRedis() *Config {
+func (c *ViperConfig) WithRedis() ConfigurationLoader {
 	if !viper.IsSet(EnvRedisDb) {
 		viper.SetDefault(EnvRedisDb, 0)
 	}
@@ -83,4 +89,9 @@ func (c *Config) WithRedis() *Config {
 		Password: viper.GetString(EnvRedisPassword),
 		Db:       viper.GetUint(EnvRedisDb),
 	}
+	return c
+}
+
+func (c *ViperConfig) Load() *Config {
+	return c.Config
 }
