@@ -13,7 +13,6 @@ const (
 	EnvServerHost = "server.host"
 
 	EnvEnvironment = "env.environment"
-	EnvMainNet     = "env.mainnet"
 	EnvRegion      = "env.region"
 	EnvVersion     = "env.version"
 	EnvCommit      = "env.commit"
@@ -24,6 +23,10 @@ const (
 	EnvDbSchema  = "db.schema.path"
 	EnvDbDsn     = "db.dsn"
 	EnvDbMigrate = "db.migrate"
+
+	EnvRedisAddress  = "redis.address"
+	EnvRedisPassword = "redis.password"
+	EnvRedisDb       = "redis.db"
 
 	LogDebug = "debug"
 	LogInfo  = "info"
@@ -38,6 +41,8 @@ type Config struct {
 	Server     *Server
 	Deployment *Deployment
 	Db         *Db
+	Redis      *Redis
+	custom     map[string]interface{}
 }
 
 // Validate will check config values are valid and return a list of failures
@@ -59,7 +64,6 @@ type Deployment struct {
 	Version     string
 	Commit      string
 	BuildDate   time.Time
-	MainNet     bool
 }
 
 // IsDev determines if this app is running on a dev environment.
@@ -102,10 +106,36 @@ const (
 	DBPostgres DbType = "postgres"
 )
 
+type Redis struct {
+	Address  string
+	Password string
+	Db       uint
+}
+
+func (c *Config) AddCustomConfig(name string, conf interface{}) {
+	c.custom[name] = conf
+}
+
+func (c *Config) CustomConfig(name string, out interface{}) {
+	out = c.custom[name]
+}
+
 // ConfigurationLoader will load configuration items
 // into a struct that contains a configuration.
 type ConfigurationLoader interface {
+	WithDefaults(func() error) *Config
+	WithCustomConfig(func(c *Config) error) *Config
 	WithServer() *Config
 	WithDb() *Config
 	WithDeployment(app string) *Config
+	WithRedis() *Config
+}
+
+func LetsSee() {
+	var r *Redis
+	Test("me", &r)
+}
+func Test(name string, out interface{}) {
+	t := map[string]interface{}{}
+	out = t[name]
 }

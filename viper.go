@@ -46,7 +46,6 @@ func (c *Config) WithDeployment(appName string) *Config {
 	viper.SetDefault(EnvCommit, "test")
 	viper.SetDefault(EnvVersion, "test")
 	viper.SetDefault(EnvBuildDate, time.Now().UTC())
-	viper.SetDefault(EnvMainNet, false)
 
 	c.Deployment = &Deployment{
 		Environment: viper.GetString(EnvEnvironment),
@@ -55,7 +54,6 @@ func (c *Config) WithDeployment(appName string) *Config {
 		Commit:      viper.GetString(EnvCommit),
 		BuildDate:   viper.GetTime(EnvBuildDate),
 		AppName:     appName,
-		MainNet:     viper.GetBool(EnvMainNet),
 	}
 	return c
 }
@@ -73,4 +71,16 @@ func (c *Config) WithDb() *Config {
 		SchemaPath: viper.GetString(EnvDbSchema),
 	}
 	return c
+}
+
+// WithRedis will include redis config.
+func (c *Config) WithRedis() *Config {
+	if !viper.IsSet(EnvRedisDb) {
+		viper.SetDefault(EnvRedisDb, 0)
+	}
+	c.Redis = &Redis{
+		Address:  viper.GetString(EnvRedisAddress),
+		Password: viper.GetString(EnvRedisPassword),
+		Db:       viper.GetUint(EnvRedisDb),
+	}
 }
