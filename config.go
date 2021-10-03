@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	EnvServerPort       = "server.port"
-	EnvServerHost       = "server.host"
-	EnvServerTLSEnabled = "server.tls.enabled"
-	EnvServerTLSCert    = "server.tls.cert"
+	EnvServerPort           = "server.port"
+	EnvServerHost           = "server.host"
+	EnvServerTLSEnabled     = "server.tls.enabled"
+	EnvServerTLSCert        = "server.tls.cert"
+	EnvServerSwaggerEnabled = "server.swagger.enabled"
 
 	EnvEnvironment = "env.environment"
 	EnvRegion      = "env.region"
@@ -27,11 +28,11 @@ const (
 	EnvDbDsn     = "db.dsn"
 	EnvDbMigrate = "db.migrate"
 
-	EnvHttpClientHost       = "%s.client.host"
-	EnvHttpClientPort       = "%s.client.port"
-	EnvHttpClientTimeout    = "%s.client.timeout"
-	EnvHttpClientTLSEnabled = "%s.client.tls.enabled"
-	EnvHttpClientTLSCert    = "%s.client.tls.cert"
+	EnvHTTPClientHost       = "%s.client.host"
+	EnvHTTPClientPort       = "%s.client.port"
+	EnvHTTPClientTimeout    = "%s.client.timeout"
+	EnvHTTPClientTLSEnabled = "%s.client.tls.enabled"
+	EnvHTTPClientTLSCert    = "%s.client.tls.cert"
 
 	EnvRedisAddress  = "redis.address"
 	EnvRedisPassword = "redis.password"
@@ -45,13 +46,32 @@ const (
 
 // Config returns strongly typed config values.
 type Config struct {
-	defaultsFn func(c Config) error
-	Logging    *Logging
-	Server     *Server
-	Deployment *Deployment
-	Db         *Db
-	Redis      *Redis
-	custom     map[string]interface{}
+	Logging     *Logging
+	Server      *Server
+	Deployment  *Deployment
+	Db          *Db
+	Redis       *Redis
+	httpClients map[string]HTTPClientConfig
+}
+
+// HTTPClientConfig is a custom http client config struct, returned
+// when CustomHTTPClient is called.
+type HTTPClientConfig struct {
+	Host       string
+	Port       string
+	TLSEnabled bool
+	TLSCert    bool
+	Timeout    time.Duration
+}
+
+// CustomHTTPClient will return a custom http client, if not found
+// nil is returned.
+func (c *Config) CustomHTTPClient(name string) *HTTPClientConfig {
+	cfg, ok := c.httpClients[name]
+	if !ok {
+		return nil
+	}
+	return &cfg
 }
 
 // Validate will check config values are valid and return a list of failures
@@ -91,8 +111,11 @@ type Logging struct {
 
 // Server contains all settings required to run a web server.
 type Server struct {
-	Port     string
-	Hostname string
+	Port           string
+	Hostname       string
+	TLSCertPath    string
+	TLSEnabled     bool
+	SwaggerEnabled bool
 }
 
 // Db contains database information.
@@ -104,8 +127,8 @@ type Db struct {
 }
 
 // Validate will ensure the HeaderClient config is valid.
-func (d *Db) Validate(v validator.ErrValidation) {
-	v = v.Validate("db.type", validator.MatchString(string(d.Type), reDbType))
+func (d *Db) Validate(v validator.ErrValidation) validator.ErrValidation {
+	return v.Validate("db.type", validator.MatchString(string(d.Type), reDbType))
 }
 
 var reDbType = regexp.MustCompile(`sqlite|mysql|postgres`)
@@ -116,7 +139,7 @@ type DbType string
 // Supported database types.
 const (
 	DBSqlite   DbType = "sqlite"
-	DBMySql    DbType = "mysql"
+	DBMySQL    DbType = "mysql"
 	DBPostgres DbType = "postgres"
 )
 
@@ -126,32 +149,14 @@ type Redis struct {
 	Db       uint
 }
 
-func (c *Config) AddCustomConfig(name string, conf interface{}) {
-	c.custom[name] = conf
-}
-
-func (c *Config) CustomConfig(name string, out interface{}) {
-	out = c.custom[name]
-}
-
 // ConfigurationLoader will load configuration items
 // into a struct that contains a configuration.
 type ConfigurationLoader interface {
 	WithServer() ConfigurationLoader
-	WithEnvironment() ConfigurationLoader
+	WithEnvironment(appname string) ConfigurationLoader
 	WithLog() ConfigurationLoader
-	WithHttpClient(name string) ConfigurationLoader
+	WithHTTPClient(name string) ConfigurationLoader
 	WithDb() ConfigurationLoader
-	WithDeployment(app string) ConfigurationLoader
 	WithRedis() ConfigurationLoader
 	Load() *Config
-}
-
-func LetsSee() {
-	var r *Redis
-	Test("me", &r)
-}
-func Test(name string, out interface{}) {
-	t := map[string]interface{}{}
-	out = t[name]
 }

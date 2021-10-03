@@ -1,3 +1,5 @@
+// Package database
+// nolint: dupl // fine to duplicate for now
 package database
 
 import (
@@ -8,19 +10,18 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
+	"github.com/theflyingcodr/config"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-
-	"github.com/libsv/bitcoin-hc/config"
 )
 
-func setupMySqlDB(c *config.Db) (*sqlx.DB, error) {
+func setupMySQLDB(c *config.Db) (*sqlx.DB, error) {
 	db, err := sqlx.Open("mysql", c.Dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to setup database")
 	}
-	if !c.MigrateDb {
+	if !c.Migrate {
 		log.Println("migrate database set to false, skipping migration")
 		return db, nil
 	}

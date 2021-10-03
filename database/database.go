@@ -13,10 +13,11 @@ type dbSetups map[config.DbType]dbSetupFunc
 
 // NewDbSetup will load the db setup functions into a lookup map
 // ready for being called in main.go.
+// nolint: revive // yep
 func NewDbSetup() dbSetups {
 	s := make(map[config.DbType]dbSetupFunc, 3)
 	s[config.DBSqlite] = setupSqliteDB
-	s[config.DBMySql] = setupMySqlDB
+	s[config.DBMySQL] = setupMySQLDB
 	s[config.DBPostgres] = setupPostgresDB
 	return s
 }

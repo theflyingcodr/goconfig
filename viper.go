@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -21,7 +22,7 @@ func NewViperConfig(appname string) *ViperConfig {
 	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		if errors.Is(err, viper.ConfigFileNotFoundError{}) {
 			// Config file not found
 			viper.Set("debug", false)
 			viper.Set("port", 1323)
@@ -32,21 +33,26 @@ func NewViperConfig(appname string) *ViperConfig {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	return &ViperConfig{
-		Config: &Config{},
+		Config: &Config{
+			httpClients: map[string]HTTPClientConfig{},
+		},
 	}
 }
 
 // WithServer will setup the web server configuration if required.
 func (c *ViperConfig) WithServer() ConfigurationLoader {
 	c.Server = &Server{
-		Port:     viper.GetString(EnvServerPort),
-		Hostname: viper.GetString(EnvServerHost),
+		Port:           viper.GetString(EnvServerPort),
+		Hostname:       viper.GetString(EnvServerHost),
+		TLSEnabled:     viper.GetBool(EnvServerTLSEnabled),
+		TLSCertPath:    viper.GetString(EnvServerTLSCert),
+		SwaggerEnabled: viper.GetBool(EnvServerSwaggerEnabled),
 	}
 	return c
 }
 
-// WithDeployment sets up the deployment configuration if required.
-func (c *ViperConfig) WithDeployment(appName string) ConfigurationLoader {
+// WithEnvironment sets up the deployment configuration if required.
+func (c *ViperConfig) WithEnvironment(appName string) ConfigurationLoader {
 	viper.SetDefault(EnvEnvironment, "dev")
 	viper.SetDefault(EnvRegion, "test")
 	viper.SetDefault(EnvCommit, "test")
@@ -75,6 +81,7 @@ func (c *ViperConfig) WithDb() ConfigurationLoader {
 		Type:       DbType(viper.GetString(EnvDb)),
 		Dsn:        viper.GetString(EnvDbDsn),
 		SchemaPath: viper.GetString(EnvDbSchema),
+		Migrate:    viper.GetBool(EnvDbMigrate),
 	}
 	return c
 }
@@ -92,6 +99,20 @@ func (c *ViperConfig) WithRedis() ConfigurationLoader {
 	return c
 }
 
+// WithHttpClient will setup a custom http client referenced by name.
+func (c *ViperConfig) WithHTTPClient(name string) ConfigurationLoader {
+	c.httpClients[name] = HTTPClientConfig{
+		Host:       viper.GetString(fmt.Sprintf(EnvHTTPClientHost, name)),
+		Port:       viper.GetString(fmt.Sprintf(EnvHTTPClientPort, name)),
+		TLSEnabled: viper.GetBool(fmt.Sprintf(EnvHTTPClientTLSEnabled, name)),
+		TLSCert:    viper.GetBool(fmt.Sprintf(EnvHTTPClientTLSCert, name)),
+		Timeout:    time.Second * time.Duration(viper.GetInt(fmt.Sprintf(EnvHTTPClientTimeout, name))),
+	}
+	return c
+}
+
+// Load will finish setup and return configuration. This should
+// always be the last call.
 func (c *ViperConfig) Load() *Config {
 	return c.Config
 }

@@ -1,3 +1,5 @@
+// Package database
+// nolint: dupl // fine to duplicate for now
 package database
 
 import (
@@ -7,12 +9,11 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jmoiron/sqlx"
+	"github.com/theflyingcodr/config"
 
 	// used to import the pq drivers.
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
-
-	"github.com/libsv/bitcoin-hc/config"
 )
 
 func setupPostgresDB(c *config.Db) (*sqlx.DB, error) {
@@ -20,7 +21,7 @@ func setupPostgresDB(c *config.Db) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to setup database")
 	}
-	if !c.MigrateDb {
+	if !c.Migrate {
 		log.Println("migrate database set to false, skipping migration")
 		return db, nil
 	}
