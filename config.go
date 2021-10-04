@@ -8,6 +8,7 @@ import (
 	validator "github.com/theflyingcodr/govalidator"
 )
 
+// Config keys used for goconfig, these get converted to UPPERCASE_SPLIT env vars.
 const (
 	EnvServerPort         = "server.port"
 	EnvServerHost         = "server.host"
@@ -108,11 +109,13 @@ func (d *Deployment) IsDev() bool {
 	return d.Environment == "dev"
 }
 
+// String implements the stringer interface for printing.
 func (d *Deployment) String() string {
 	return fmt.Sprintf("Environment: %s \n AppName: %s\n Region: %s\n Version: %s\n Commit:%s\n BuildDate: %s\n",
 		d.Environment, d.AppName, d.Region, d.Version, d.Commit, d.BuildDate)
 }
 
+// Logging will set the default log level for the application.
 type Logging struct {
 	Level string
 }
@@ -151,6 +154,7 @@ const (
 	DBPostgres DbType = "postgres"
 )
 
+// Redis config can be sued to connect to a redis instance usually for caching.
 type Redis struct {
 	Address  string
 	Password string

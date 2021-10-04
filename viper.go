@@ -10,10 +10,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+// ViperConfig wraps config and implements ConfigurationLoader.
 type ViperConfig struct {
 	*Config
 }
 
+// NewViperConfig will setup and return viper configuration that
+// implements goconfig.ConfigurationLoader.
 func NewViperConfig(appname string) *ViperConfig {
 	viper.SetConfigName("config")
 	viper.SetConfigType("ini")
@@ -70,6 +73,7 @@ func (c *ViperConfig) WithEnvironment(appName string) ConfigurationLoader {
 	return c
 }
 
+// WithLog sets up logger config from environment variables.
 func (c *ViperConfig) WithLog() ConfigurationLoader {
 	c.Logging = &Logging{Level: viper.GetString(EnvLogLevel)}
 	return c
@@ -99,7 +103,7 @@ func (c *ViperConfig) WithRedis() ConfigurationLoader {
 	return c
 }
 
-// WithHttpClient will setup a custom http client referenced by name.
+// WithHTTPClient will setup a custom http client referenced by name.
 func (c *ViperConfig) WithHTTPClient(name string) ConfigurationLoader {
 	c.httpClients[name] = HTTPClientConfig{
 		Host:       viper.GetString(fmt.Sprintf(EnvHTTPClientHost, name)),

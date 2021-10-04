@@ -1,5 +1,5 @@
 [![Release](https://img.shields.io/github/release-pre/theflyingcodr/goconfig.svg?logo=github&style=flat&v=1)](https://github.com/theflyingcodr/goconfig/releases)
-[![Build Status](https://img.shields.io/github/workflow/status/theflyingcodr/goconfig/run-go-tests?logo=github&v=3)](https://github.com/theflyingcodr/goconfig/actions)
+[![Build Status](https://img.shields.io/github/workflow/status/theflyingcodr/goconfig/build?logo=github&v=3)](https://github.com/theflyingcodr/goconfig/actions)
 [![Report](https://goreportcard.com/badge/github.com/theflyingcodr/goconfig?style=flat&v=1)](https://goreportcard.com/report/github.com/theflyingcodr/goconfig)
 [![Go](https://img.shields.io/github/go-mod/go-version/theflyingcodr/goconfig?v=1)](https://golang.org/)
 [![Mergify Status][mergify-status]][mergify]
