@@ -9,11 +9,17 @@ import (
 )
 
 const (
-	EnvServerPort           = "server.port"
-	EnvServerHost           = "server.host"
-	EnvServerTLSEnabled     = "server.tls.enabled"
-	EnvServerTLSCert        = "server.tls.cert"
-	EnvServerSwaggerEnabled = "server.swagger.enabled"
+	EnvServerPort         = "server.port"
+	EnvServerHost         = "server.host"
+	EnvServerTLSEnabled   = "server.tls.enabled"
+	EnvServerTLSCert      = "server.tls.cert"
+	EnvServerPprofEnabled = "server.pprof.enabled"
+
+	EnvSwaggerHost    = "swagger.host"
+	EnvSwaggerEnabled = "swagger.enabled"
+
+	EnvMetricsEnabled = "metrics.enabled"
+	EnvTracingEnabled = "tracing.enabled"
 
 	EnvEnvironment = "env.environment"
 	EnvRegion      = "env.region"
@@ -46,12 +52,14 @@ const (
 
 // Config returns strongly typed config values.
 type Config struct {
-	Logging     *Logging
-	Server      *Server
-	Deployment  *Deployment
-	Db          *Db
-	Redis       *Redis
-	httpClients map[string]HTTPClientConfig
+	Logging         *Logging
+	Server          *Server
+	Deployment      *Deployment
+	Db              *Db
+	Redis           *Redis
+	Swagger         *Swagger
+	Instrumentation *Instrumentation
+	httpClients     map[string]HTTPClientConfig
 }
 
 // HTTPClientConfig is a custom http client config struct, returned
@@ -111,11 +119,11 @@ type Logging struct {
 
 // Server contains all settings required to run a web server.
 type Server struct {
-	Port           string
-	Hostname       string
-	TLSCertPath    string
-	TLSEnabled     bool
-	SwaggerEnabled bool
+	Port         string
+	Hostname     string
+	TLSCertPath  string
+	TLSEnabled   bool
+	PProfEnabled bool
 }
 
 // Db contains database information.
@@ -149,6 +157,23 @@ type Redis struct {
 	Db       uint
 }
 
+// Swagger contains swagger configuration.
+type Swagger struct {
+	// Host, if set, will override the default swagger host which
+	// is usually the same as the server hosting it ie 'localhost'.
+	Host string
+	// Enabled if true, can be used to switch swagger endpoints on.
+	Enabled bool
+}
+
+// Instrumentation contains metrics and tracing functionality.
+type Instrumentation struct {
+	// MetricsEnabled will enable / disable metric collection such as prometheus.
+	MetricsEnabled bool
+	// TracingEnabled will enable / disable open tracing.
+	TracingEnabled bool
+}
+
 // ConfigurationLoader will load configuration items
 // into a struct that contains a configuration.
 type ConfigurationLoader interface {
@@ -158,5 +183,7 @@ type ConfigurationLoader interface {
 	WithHTTPClient(name string) ConfigurationLoader
 	WithDb() ConfigurationLoader
 	WithRedis() ConfigurationLoader
+	WithSwagger() ConfigurationLoader
+	WithInstrumentation() ConfigurationLoader
 	Load() *Config
 }

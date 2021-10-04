@@ -42,11 +42,11 @@ func NewViperConfig(appname string) *ViperConfig {
 // WithServer will setup the web server configuration if required.
 func (c *ViperConfig) WithServer() ConfigurationLoader {
 	c.Server = &Server{
-		Port:           viper.GetString(EnvServerPort),
-		Hostname:       viper.GetString(EnvServerHost),
-		TLSEnabled:     viper.GetBool(EnvServerTLSEnabled),
-		TLSCertPath:    viper.GetString(EnvServerTLSCert),
-		SwaggerEnabled: viper.GetBool(EnvServerSwaggerEnabled),
+		Port:         viper.GetString(EnvServerPort),
+		Hostname:     viper.GetString(EnvServerHost),
+		TLSEnabled:   viper.GetBool(EnvServerTLSEnabled),
+		TLSCertPath:  viper.GetString(EnvServerTLSCert),
+		PProfEnabled: viper.GetBool(EnvServerPprofEnabled),
 	}
 	return c
 }
@@ -107,6 +107,24 @@ func (c *ViperConfig) WithHTTPClient(name string) ConfigurationLoader {
 		TLSEnabled: viper.GetBool(fmt.Sprintf(EnvHTTPClientTLSEnabled, name)),
 		TLSCert:    viper.GetBool(fmt.Sprintf(EnvHTTPClientTLSCert, name)),
 		Timeout:    time.Second * time.Duration(viper.GetInt(fmt.Sprintf(EnvHTTPClientTimeout, name))),
+	}
+	return c
+}
+
+// WithSwagger will setup and return swagger configuration.
+func (c *ViperConfig) WithSwagger() ConfigurationLoader {
+	c.Swagger = &Swagger{
+		Host:    viper.GetString(EnvSwaggerHost),
+		Enabled: viper.GetBool(EnvSwaggerEnabled),
+	}
+	return c
+}
+
+// WithInstrumentation will read instrumentation envrionment vars.
+func (c *ViperConfig) WithInstrumentation() ConfigurationLoader {
+	c.Instrumentation = &Instrumentation{
+		MetricsEnabled: viper.GetBool(EnvMetricsEnabled),
+		TracingEnabled: viper.GetBool(EnvTracingEnabled),
 	}
 	return c
 }

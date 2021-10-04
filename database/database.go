@@ -11,15 +11,19 @@ import (
 type dbSetupFunc func(c *config.Db) (*sqlx.DB, error)
 type dbSetups map[config.DbType]dbSetupFunc
 
+// DBSetups contains setups for different data base types, if supported.
+type DBSetups struct {
+	dbSetups
+}
+
 // NewDbSetup will load the db setup functions into a lookup map
 // ready for being called in main.go.
-// nolint: revive // yep
-func NewDbSetup() dbSetups {
+func NewDbSetup() DBSetups {
 	s := make(map[config.DbType]dbSetupFunc, 3)
 	s[config.DBSqlite] = setupSqliteDB
 	s[config.DBMySQL] = setupMySQLDB
 	s[config.DBPostgres] = setupPostgresDB
-	return s
+	return DBSetups{s}
 }
 
 // SetupDb can be used to setup a new database.
