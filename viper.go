@@ -120,7 +120,7 @@ func (c *ViperConfig) WithSwagger() ConfigurationLoader {
 	return c
 }
 
-// WithInstrumentation will read instrumentation envrionment vars.
+// WithInstrumentation will read instrumentation environment vars.
 func (c *ViperConfig) WithInstrumentation() ConfigurationLoader {
 	c.Instrumentation = &Instrumentation{
 		MetricsEnabled: viper.GetBool(EnvMetricsEnabled),
