@@ -38,11 +38,11 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Tests
-        run: make test-unit
+        run: make run-unit-tests
       - name: Update code coverage
         run: bash <(curl -s https://codecov.io/bash)
       - name: Build
-        run: go build -v ./...
+        run: go build -v ./... -race
   release:
     needs: [golangci,build]
     runs-on: ubuntu-latest
