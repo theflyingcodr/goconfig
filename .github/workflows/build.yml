@@ -43,7 +43,7 @@ jobs:
       - name: Update code coverage
         run: bash <(curl -s https://codecov.io/bash)
       - name: Build
-        run: go build -v ./... -race
+        run: go build -v ./...
   release:
     needs: [golangci,build]
     runs-on: ubuntu-latest
