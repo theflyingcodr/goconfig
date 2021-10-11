@@ -1,3 +1,4 @@
+//go:build sqlite
 // Package database defines db level setup.
 // nolint: dupl // fine to duplicate for now
 package database

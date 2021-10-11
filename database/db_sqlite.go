@@ -1,4 +1,4 @@
-//go:build !sqlite
+//go:build sqlite
 
 package database
 
@@ -22,6 +22,7 @@ type DBSetups struct {
 // ready for being called in main.go.
 func NewDbSetup() DBSetups {
 	s := make(map[config.DbType]dbSetupFunc, 3)
+	s[config.DBSqlite] = setupSqliteDB
 	s[config.DBMySQL] = setupMySQLDB
 	s[config.DBPostgres] = setupPostgresDB
 	return DBSetups{s}
