@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -9,7 +10,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewViperConfig(appname string) *Config {
+// ViperConfig wraps config and implements ConfigurationLoader.
+type ViperConfig struct {
+	*Config
+}
+
+// NewViperConfig will setup and return viper configuration that
+// implements goconfig.ConfigurationLoader.
+func NewViperConfig(appname string) *ViperConfig {
 	viper.SetConfigName("config")
 	viper.SetConfigType("ini")
 	viper.AddConfigPath(fmt.Sprintf("/etc/%s/", appname))
@@ -17,7 +25,7 @@ func NewViperConfig(appname string) *Config {
 	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		if errors.Is(err, viper.ConfigFileNotFoundError{}) {
 			// Config file not found
 			viper.Set("debug", false)
 			viper.Set("port", 1323)
@@ -27,26 +35,32 @@ func NewViperConfig(appname string) *Config {
 	}
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	return &Config{}
+	return &ViperConfig{
+		Config: &Config{
+			httpClients: map[string]HTTPClientConfig{},
+		},
+	}
 }
 
 // WithServer will setup the web server configuration if required.
-func (c *Config) WithServer() *Config {
+func (c *ViperConfig) WithServer() ConfigurationLoader {
 	c.Server = &Server{
-		Port:     viper.GetString(EnvServerPort),
-		Hostname: viper.GetString(EnvServerHost),
+		Port:         viper.GetString(EnvServerPort),
+		Hostname:     viper.GetString(EnvServerHost),
+		TLSEnabled:   viper.GetBool(EnvServerTLSEnabled),
+		TLSCertPath:  viper.GetString(EnvServerTLSCert),
+		PProfEnabled: viper.GetBool(EnvServerPprofEnabled),
 	}
 	return c
 }
 
-// WithDeployment sets up the deployment configuration if required.
-func (c *Config) WithDeployment(appName string) *Config {
+// WithEnvironment sets up the deployment configuration if required.
+func (c *ViperConfig) WithEnvironment(appName string) ConfigurationLoader {
 	viper.SetDefault(EnvEnvironment, "dev")
 	viper.SetDefault(EnvRegion, "test")
 	viper.SetDefault(EnvCommit, "test")
 	viper.SetDefault(EnvVersion, "test")
 	viper.SetDefault(EnvBuildDate, time.Now().UTC())
-	viper.SetDefault(EnvMainNet, false)
 
 	c.Deployment = &Deployment{
 		Environment: viper.GetString(EnvEnvironment),
@@ -55,22 +69,72 @@ func (c *Config) WithDeployment(appName string) *Config {
 		Commit:      viper.GetString(EnvCommit),
 		BuildDate:   viper.GetTime(EnvBuildDate),
 		AppName:     appName,
-		MainNet:     viper.GetBool(EnvMainNet),
 	}
 	return c
 }
 
-func (c *Config) WithLog() *Config {
+// WithLog sets up logger config from environment variables.
+func (c *ViperConfig) WithLog() ConfigurationLoader {
 	c.Logging = &Logging{Level: viper.GetString(EnvLogLevel)}
 	return c
 }
 
 // WithDb sets up and returns database configuration.
-func (c *Config) WithDb() *Config {
+func (c *ViperConfig) WithDb() ConfigurationLoader {
 	c.Db = &Db{
-		Type:       viper.GetString(EnvDb),
+		Type:       DbType(viper.GetString(EnvDb)),
 		Dsn:        viper.GetString(EnvDbDsn),
 		SchemaPath: viper.GetString(EnvDbSchema),
+		Migrate:    viper.GetBool(EnvDbMigrate),
 	}
 	return c
+}
+
+// WithRedis will include redis config.
+func (c *ViperConfig) WithRedis() ConfigurationLoader {
+	if !viper.IsSet(EnvRedisDb) {
+		viper.SetDefault(EnvRedisDb, 0)
+	}
+	c.Redis = &Redis{
+		Address:  viper.GetString(EnvRedisAddress),
+		Password: viper.GetString(EnvRedisPassword),
+		Db:       viper.GetUint(EnvRedisDb),
+	}
+	return c
+}
+
+// WithHTTPClient will setup a custom http client referenced by name.
+func (c *ViperConfig) WithHTTPClient(name string) ConfigurationLoader {
+	c.httpClients[name] = HTTPClientConfig{
+		Host:       viper.GetString(fmt.Sprintf(EnvHTTPClientHost, name)),
+		Port:       viper.GetString(fmt.Sprintf(EnvHTTPClientPort, name)),
+		TLSEnabled: viper.GetBool(fmt.Sprintf(EnvHTTPClientTLSEnabled, name)),
+		TLSCert:    viper.GetBool(fmt.Sprintf(EnvHTTPClientTLSCert, name)),
+		Timeout:    time.Second * time.Duration(viper.GetInt(fmt.Sprintf(EnvHTTPClientTimeout, name))),
+	}
+	return c
+}
+
+// WithSwagger will setup and return swagger configuration.
+func (c *ViperConfig) WithSwagger() ConfigurationLoader {
+	c.Swagger = &Swagger{
+		Host:    viper.GetString(EnvSwaggerHost),
+		Enabled: viper.GetBool(EnvSwaggerEnabled),
+	}
+	return c
+}
+
+// WithInstrumentation will read instrumentation environment vars.
+func (c *ViperConfig) WithInstrumentation() ConfigurationLoader {
+	c.Instrumentation = &Instrumentation{
+		MetricsEnabled: viper.GetBool(EnvMetricsEnabled),
+		TracingEnabled: viper.GetBool(EnvTracingEnabled),
+	}
+	return c
+}
+
+// Load will finish setup and return configuration. This should
+// always be the last call.
+func (c *ViperConfig) Load() *Config {
+	return c.Config
 }
