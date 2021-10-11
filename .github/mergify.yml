@@ -12,14 +12,10 @@ pull_request_rules:
       - check-success='build (1.16.x, ubuntu-latest)'
       - check-success='build (1.17.x, macos-latest)'
       - check-success='build (1.16.x, macos-latest)'
-      - check-success='build (1.17.x, windows-latest)'
-      - check-success='build (1.16.x, windows-latest)'
       - check-success='lint (1.17.x, ubuntu-latest)'
       - check-success='lint (1.16.x, ubuntu-latest)'
       - check-success='lint (1.17.x, macos-latest)'
       - check-success='lint (1.16.x, macos-latest)'
-      - check-success='lint (1.17.x, windows-latest)'
-      - check-success='lint (1.16.x, windows-latest)'
       - check-success='Analyze (go)'
       - title~=^Bump [^\s]+ from ([\d]+)\..+ to \1\.
     actions:
@@ -38,14 +34,10 @@ pull_request_rules:
       - check-success='build (1.16.x, ubuntu-latest)'
       - check-success='build (1.17.x, macos-latest)'
       - check-success='build (1.16.x, macos-latest)'
-      - check-success='build (1.17.x, windows-latest)'
-      - check-success='build (1.16.x, windows-latest)'
       - check-success='lint (1.17.x, ubuntu-latest)'
       - check-success='lint (1.16.x, ubuntu-latest)'
       - check-success='lint (1.17.x, macos-latest)'
       - check-success='lint (1.16.x, macos-latest)'
-      - check-success='lint (1.17.x, windows-latest)'
-      - check-success='lint (1.16.x, windows-latest)'
       - check-success='Analyze (go)'
       - -title~=^Bump [^\s]+ from ([\d]+)\..+ to \1\.
     actions:
@@ -71,14 +63,10 @@ pull_request_rules:
       - check-success='build (1.16.x, ubuntu-latest)'
       - check-success='build (1.17.x, macos-latest)'
       - check-success='build (1.16.x, macos-latest)'
-      - check-success='build (1.17.x, windows-latest)'
-      - check-success='build (1.16.x, windows-latest)'
       - check-success='lint (1.17.x, ubuntu-latest)'
       - check-success='lint (1.16.x, ubuntu-latest)'
       - check-success='lint (1.17.x, macos-latest)'
       - check-success='lint (1.16.x, macos-latest)'
-      - check-success='lint (1.17.x, windows-latest)'
-      - check-success='lint (1.16.x, windows-latest)'
       - check-success='Analyze (go)'
       - label!=work-in-progress
       - -draft
