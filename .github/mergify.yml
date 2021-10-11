@@ -23,7 +23,7 @@ pull_request_rules:
         type: APPROVE
         message: Automatically approving dependabot pull request
       merge:
-        method: merge
+        method: squash
       label:
         add:
           - update
@@ -74,7 +74,7 @@ pull_request_rules:
       review:
         type: APPROVE
       merge:
-        method: merge
+        method: squash
       comment:
         message: "Automatically merging this PR, LGTM! \n\n  ![Great Success](https://media.giphy.com/media/a0h7sAqON67nO/giphy.gif?cid=ecf05e47wywpzv7bclrv6muzureq5hk0u3rd8fradbqjng68&rid=giphy.gif&ct=g)"
 
