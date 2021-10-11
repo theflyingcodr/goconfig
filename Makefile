@@ -5,7 +5,7 @@ run-all-tests: run-linter run-unit-tests
 pre-commit: vendor-deps run-all-tests
 
 run-unit-tests:
-	@go clean -testcache && go test -v ./... -race
+	@go clean -testcache && go test -v -race ./...
 
 run-unit-tests-cover:
 	@go test ./... -race -v -coverprofile cover.out && \
